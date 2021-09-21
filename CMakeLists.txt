@@ -9,6 +9,8 @@ add_definitions(-DGLEW_STATIC)
 
 find_package( OpenGL REQUIRED )
 
+file(COPY res DESTINATION ${CMAKE_BINARY_DIR})
+
 target_include_directories(${PROJECT_NAME}
 	PUBLIC ${OPENGL_INCLUDE_DIRS}
 	PUBLIC ${PROJECT_SOURCE_DIR}/dependencies/glfw/include
