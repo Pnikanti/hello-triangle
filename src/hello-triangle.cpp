@@ -80,6 +80,17 @@ static unsigned int CreateShader(const std::string& vertexShader, const std::str
     return program;
 }
 
+void processInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+void framebufferSizeCb(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
 int main(void)
 {
     GLFWwindow* window;
@@ -90,6 +101,7 @@ int main(void)
     window = glfwCreateWindow(640, 480, "OpenGL Hello Triangle", NULL, NULL);
 
     glfwMakeContextCurrent(window);
+    glfwSetFramebufferSizeCallback(window, framebufferSizeCb);
 
     if (!window)
     {
@@ -106,40 +118,44 @@ int main(void)
 
     std::cout << "Glew Version: " << glewGetString(GLEW_VERSION) << std::endl;
 
-    float positions[6] = {
-       -0.5f, -0.5f,
-        0.0f,  0.5f,
-        0.5f, -0.5f
+    float vertices[] = {
+       -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
+        0.0f,  0.5f,  0.0f, 1.0f, 0.0f,
+        0.5f, -0.5f,  0.0f, 0.0f, 1.0f
     };
 
-    unsigned int buffer;
+    unsigned int vbo, vao;
 
-    glGenBuffers(1, &buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), positions, GL_STATIC_DRAW);
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
 
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    // position attribute
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+    // color attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*)(2 * sizeof(float)));
+    glEnableVertexAttribArray(1);
     
     ShaderProgramSource source = ParseShaders("res/shaders/vertex.shader", "res/shaders/fragment.shader");
-    
-    // DEBUG
-    //std::cout << "VERTEX" << std::endl;
-    //std::cout << source.VertexSource << std::endl;
-    //std::cout << "FRAGMENT" << std::endl;
-    //std::cout << source.FragmentSource << std::endl;
-
+   
     unsigned int shader = CreateShader(source.VertexSource, source.FragmentSource);
     glUseProgram(shader);
 
     while (!glfwWindowShouldClose(window))
     {
+
+        processInput(window);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
         glfwSwapBuffers(window);
-
         glfwPollEvents();
     }
     glDeleteProgram(shader);

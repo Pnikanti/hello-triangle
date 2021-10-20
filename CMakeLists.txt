@@ -1,7 +1,7 @@
 ﻿cmake_minimum_required (VERSION 3.8)
 project ("opengl-hello-triangle" VERSION 0.1)
 
-add_executable (opengl-hello-triangle "hello-triangle.cpp")
+add_executable (${PROJECT_NAME} "src/hello-triangle.cpp")
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 
