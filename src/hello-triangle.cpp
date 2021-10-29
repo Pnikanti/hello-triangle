@@ -4,6 +4,21 @@
 #include <sstream>
 #include <glew.h>
 #include <glfw3.h>
+#include <glm.hpp>
+#include <gtc/matrix_transform.hpp>
+#include <gtc/type_ptr.hpp>
+
+static int SCR_WIDTH = 800;
+static int SCR_HEIGHT = 800;
+
+static unsigned int shader;
+static unsigned int vpUniform;
+static unsigned int modelUniform;
+
+static glm::mat4 view = glm::mat4(1.0f);
+static glm::mat4 model = glm::mat4(1.0f);
+static glm::mat4 proj;
+static glm::mat4 vp;
 
 struct ShaderProgramSource
 {
@@ -88,7 +103,14 @@ void processInput(GLFWwindow* window)
 
 void framebufferSizeCb(GLFWwindow* window, int width, int height)
 {
-    glViewport(0, 0, width, height);
+    SCR_WIDTH = width;
+    SCR_HEIGHT = height;
+    glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+
+    // Recalculate projection
+    proj = glm::ortho(0.0f, (float)SCR_WIDTH, 0.0f, float(SCR_HEIGHT), -1.0f, 100.0f);
+    vp = proj * view;
+    glUniformMatrix4fv(vpUniform, 1, GL_FALSE, glm::value_ptr(vp));
 }
 
 int main(void)
@@ -98,7 +120,7 @@ int main(void)
     if (!glfwInit())
         return -1;
 
-    window = glfwCreateWindow(640, 480, "OpenGL Hello Triangle", NULL, NULL);
+    window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "OpenGL Hello Triangle", NULL, NULL);
 
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebufferSizeCb);
@@ -119,6 +141,7 @@ int main(void)
     std::cout << "Glew Version: " << glewGetString(GLEW_VERSION) << std::endl;
 
     float vertices[] = {
+        // position x, y  // color RGB
        -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,
         0.0f,  0.5f,  0.0f, 1.0f, 0.0f,
         0.5f, -0.5f,  0.0f, 0.0f, 1.0f
@@ -142,8 +165,33 @@ int main(void)
     
     ShaderProgramSource source = ParseShaders("res/shaders/vertex.shader", "res/shaders/fragment.shader");
    
-    unsigned int shader = CreateShader(source.VertexSource, source.FragmentSource);
+    shader = CreateShader(source.VertexSource, source.FragmentSource);
     glUseProgram(shader);
+
+    // Camera transformations
+
+    proj = glm::ortho(0.0f, (float)SCR_WIDTH, 0.0f, float(SCR_HEIGHT), -1.0f, 100.0f);
+
+    // World transformations
+
+    view = glm::translate(view, glm::vec3(0.0f, 0.0f, 0.0f));
+
+    // view-proj
+    vp = proj * view;
+
+    vpUniform = glGetUniformLocation(shader, "vp");
+    glUniformMatrix4fv(vpUniform, 1, GL_FALSE, glm::value_ptr(vp));
+
+    // Model transforms
+    glm::vec2 size(300.0f, 300.0f);
+    glm::vec2 position(400.0f, 400.0f);
+
+    model = glm::translate(model, glm::vec3(position, 0.0f)); // Order: translation, rotation, scale
+    model = glm::scale(model, glm::vec3(size, 1.0f));
+
+    modelUniform = glGetUniformLocation(shader, "model");
+    glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(model));
+
 
     while (!glfwWindowShouldClose(window))
     {
