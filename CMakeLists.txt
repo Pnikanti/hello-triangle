@@ -15,6 +15,7 @@ target_include_directories(${PROJECT_NAME}
 	PUBLIC ${OPENGL_INCLUDE_DIRS}
 	PUBLIC ${PROJECT_SOURCE_DIR}/dependencies/glfw/include
 	PUBLIC ${PROJECT_SOURCE_DIR}/dependencies/glew/include
+	PUBLIC ${PROJECT_SOURCE_DIR}/dependencies/glm/include
 )
 
 target_link_libraries(${PROJECT_NAME}
