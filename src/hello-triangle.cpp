@@ -108,7 +108,7 @@ void framebufferSizeCb(GLFWwindow* window, int width, int height)
     glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 
     // Recalculate projection
-    proj = glm::ortho(0.0f, (float)SCR_WIDTH, 0.0f, float(SCR_HEIGHT), -1.0f, 100.0f);
+    proj = glm::ortho(0.0f, (float)SCR_WIDTH, 0.0f, (float)SCR_HEIGHT, -1.0f, 100.0f);
     vp = proj * view;
     glUniformMatrix4fv(vpUniform, 1, GL_FALSE, glm::value_ptr(vp));
 }
